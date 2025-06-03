@@ -28,10 +28,39 @@ describe('SIGNETIC Feature -QA pharmacy.', () => {
     // Click on refresh data from schedule appointment details
     cy.contains('span', 'Refresh Data').click();
     cy.scrollTo('bottom');
+    cy.wait(5000);
 
-    //Select one time
-    cy.contains('span', '4:40 am').click();
-    // cy.wait(4000)
+
+
+// Step 1: Pick a random enabled date and click it
+cy.get('div.react-datepicker__day')
+  .filter((_, el) => el.getAttribute('aria-disabled') !== 'true')
+  .then((enabledDates) => {
+    const count = enabledDates.length;
+    cy.log(`Found ${count} enabled dates`);
+
+    if (count > 0) {
+      const randomIndex = Math.floor(Math.random() * count);
+      cy.wrap(enabledDates[randomIndex]).click();
+
+      // Step 2: After clicking the date, check the Continue button status
+      cy.get('button[data-qa="btn-continue"]').then(($btn) => {
+        if ($btn.is(':disabled')) {
+          cy.log('Continue button is disabled, selecting enabled time slot');
+
+          // Step 3: Select an enabled time slot
+          cy.get('span.select-time__item:not(.select-time__item--disabled)')
+            .last()
+            .click();
+        } else {
+          cy.log('Continue button is enabled');
+        }
+      });
+    } else {
+      cy.log('No enabled dates found');
+    }
+  });
+cy.wait(5000);
     cy.scrollTo('bottom');
 
     //cy.contains('span','Continue to Eligibility and Screening page').click();

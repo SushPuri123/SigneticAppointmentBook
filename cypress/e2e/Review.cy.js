@@ -32,8 +32,37 @@ describe('SIGNETIC Feature -QA pharmacy UI Testing.', () => {
     //Clinic and timing page
     cy.contains('Refresh Data').click();
     cy.scrollTo('bottom');
-    cy.get('.react-datepicker__day--025').click();
-    cy.get('span.text-demibold').contains("05:25 pm").click();
+    // cy.get('.react-datepicker__day--025').click();
+    // cy.get('span.text-demibold').contains("05:25 pm").click();
+// Step 1: Pick a random enabled date and click it
+cy.get('div.react-datepicker__day')
+  .filter((_, el) => el.getAttribute('aria-disabled') !== 'true')
+  .then((enabledDates) => {
+    const count = enabledDates.length;
+    cy.log(`Found ${count} enabled dates`);
+
+    if (count > 0) {
+      const randomIndex = Math.floor(Math.random() * count);
+      cy.wrap(enabledDates[randomIndex]).click();
+
+      // Step 2: After clicking the date, check the Continue button status
+      cy.get('button[data-qa="btn-continue"]').then(($btn) => {
+        if ($btn.is(':disabled')) {
+          cy.log('Continue button is disabled, selecting enabled time slot');
+
+          // Step 3: Select an enabled time slot
+          cy.get('span.select-time__item:not(.select-time__item--disabled)')
+            .last()
+            .click();
+        } else {
+          cy.log('Continue button is enabled');
+        }
+      });
+    } else {
+      cy.log('No enabled dates found');
+    }
+  });
+//Above case checks the date is enabled and disabled.
     cy.scrollTo('bottom');
     cy.get('[data-qa="btn-continue"]').click();
 
